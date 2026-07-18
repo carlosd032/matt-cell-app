@@ -28,6 +28,7 @@ create table if not exists ventas (
   fecha date,
   cliente_key text references clientes(key),
   cliente text,
+  tipo_producto text default 'CELULAR',
   marca text default '',
   modelo text,
   capacidad text default '',
@@ -81,6 +82,10 @@ create table if not exists capital_inicial (
 insert into capital_inicial (id, monto, fecha) values (1, 0, current_date)
   on conflict (id) do nothing;
 
+-- Si la tabla ventas ya existía sin esta columna (actualización), agrégala:
+alter table ventas add column if not exists tipo_producto text default 'CELULAR';
+alter table obligaciones add column if not exists frecuencia text default 'MENSUAL';
+
 -- Inyecciones de capital adicionales
 create table if not exists capital_inyectado (
   id bigint primary key,
@@ -127,6 +132,25 @@ drop policy if exists "auth full access gastos" on gastos;
 drop policy if exists "auth full access capital_inicial" on capital_inicial;
 drop policy if exists "auth full access capital_inyectado" on capital_inyectado;
 drop policy if exists "auth full access obligaciones" on obligaciones;
+drop policy if exists "usuarios autenticados ven su perfil" on profiles;
+drop policy if exists "usuarios autenticados actualizan su perfil" on profiles;
+drop policy if exists "usuarios autenticados crean su perfil" on profiles;
+drop policy if exists "clientes select" on clientes;
+drop policy if exists "clientes insert" on clientes;
+drop policy if exists "clientes update" on clientes;
+drop policy if exists "clientes delete solo dueño" on clientes;
+drop policy if exists "ventas select" on ventas;
+drop policy if exists "ventas insert" on ventas;
+drop policy if exists "ventas update" on ventas;
+drop policy if exists "ventas delete solo dueño" on ventas;
+drop policy if exists "inventario select" on inventario;
+drop policy if exists "inventario insert" on inventario;
+drop policy if exists "inventario update" on inventario;
+drop policy if exists "inventario delete solo dueño" on inventario;
+drop policy if exists "gastos solo dueño" on gastos;
+drop policy if exists "capital_inicial solo dueño" on capital_inicial;
+drop policy if exists "capital_inyectado solo dueño" on capital_inyectado;
+drop policy if exists "obligaciones solo dueño" on obligaciones;
 
 -- Regla base: cualquier usuario CON SESIÓN puede leer/crear/editar.
 -- Reglas reforzadas: SOLO 'dueño' puede eliminar registros de negocio,
